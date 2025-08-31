@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Activities - Fitness Tracker{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="d-flex justify-between align-center mb-3">
+        <h1>My Activities</h1>
+        <a href="{% url 'add_activity' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add Activity
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <h3>Filters</h3>
+        <form id="filterForm" class="grid grid-3">
+            <div class="form-group">
+                <label for="activityType" class="form-label">Activity Type</label>
+                <select id="activityType" name="activity_type" class="form-input">
+                    <option value="">All Types</option>
+                    <option value="running">Running</option>
+                    <option value="cycling">Cycling</option>
+                    <option value="weightlifting">Weightlifting</option>
+                    <option value="swimming">Swimming</option>
+                    <option value="walking">Walking</option>
+                    <option value="yoga">Yoga</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="startDate" class="form-label">Start Date</label>
+                <input type="date" id="startDate" name="start_date" class="form-input">
+            </div>
+            
+            <div class="form-group">
+                <label for="endDate" class="form-label">End Date</label>
+                <input type="date" id="endDate" name="end_date" class="form-input">
+            </div>
+        </form>
+        
+        <div class="d-flex gap-2">
+            <button type="button" id="applyFilters" class="btn btn-primary">Apply Filters</button>
+            <button type="button" id="clearFilters" class="btn btn-secondary">Clear Filters</button>
+        </div>
+    </div>
+
+    <!-- Activities List -->
+    <div id="activitiesList">
+        {% if activities %}
+            <div class="grid grid-2">
+                {% for activity in activities %}
+                <div class="activity-card">
+                    <div class="d-flex justify-between align-center mb-2">
+                        <span class="activity-type {{ activity.activity_type }}">{{ activity.activity_type }}</span>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-secondary" onclick="editActivity('{{ activity.id }}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-secondary" onclick="deleteActivity('{{ activity.id }}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <h3>{{ activity.duration }} minutes</h3>
+                    <p class="text-muted mb-2">
+                        <i class="fas fa-route"></i> {{ activity.distance }} km | 
+                        <i class="fas fa-fire"></i> {{ activity.calories_burned }} cal
+                    </p>
+                    <small class="text-muted">{{ activity.date|date:"M d, Y H:i" }}</small>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if activities.has_other_pages %}
+            <div class="d-flex justify-center mt-3">
+                <div class="d-flex gap-2">
+                    {% if activities.has_previous %}
+                        <a href="?page={{ activities.previous_page_number }}" class="btn btn-secondary">Previous</a>
+                    {% endif %}
+                    
+                    <span class="btn btn-secondary">{{ activities.number }} of {{ activities.paginator.num_pages }}</span>
+                    
+                    {% if activities.has_next %}
+                        <a href="?page={{ activities.next_page_number }}" class="btn btn-secondary">Next</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center text-muted">
+                <i class="fas fa-running" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                <p>No activities found. Start tracking your fitness journey!</p>
+                <a href="{% url 'add_activity' %}" class="btn btn-primary">Add Your First Activity</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Edit Activity Modal -->
+<div id="editModal" class="d-none" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001;">
+    <div class="card" style="max-width: 500px; margin: 50px auto;">
+        <h2>Edit Activity</h2>
+        <form id="editForm">
+            <div class="form-group">
+                <label for="editActivityType" class="form-label">Activity Type</label>
+                <select id="editActivityType" name="activity_type" class="form-input" required>
+                    <option value="running">Running</option>
+                    <option value="cycling">Cycling</option>
+                    <option value="weightlifting">Weightlifting</option>
+                    <option value="swimming">Swimming</option>
+                    <option value="walking">Walking</option>
+                    <option value="yoga">Yoga</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="editDuration" class="form-label">Duration (minutes)</label>
+                <input type="number" id="editDuration" name="duration" class="form-input" required min="1">
+            </div>
+            
+            <div class="form-group">
+                <label for="editDistance" class="form-label">Distance (km)</label>
+                <input type="number" id="editDistance" name="distance" class="form-input" required min="0" step="0.1">
+            </div>
+            
+            <div class="form-group">
+                <label for="editCalories" class="form-label">Calories Burned</label>
+                <input type="number" id="editCalories" name="calories_burned" class="form-input" required min="0">
+            </div>
+            
+            <div class="form-group">
+                <label for="editDate" class="form-label">Date & Time</label>
+                <input type="datetime-local" id="editDate" name="date" class="form-input" required>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Update Activity</button>
+                <button type="button" onclick="closeEditModal()" class="btn btn-secondary">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/activities.js' %}"></script>
+{% endblock %}

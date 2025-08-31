@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Fitness Tracker{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 500px; margin: 0 auto;">
+    <div class="text-center mb-3">
+        <h1>Create Account</h1>
+        <p class="text-muted">Join Fitness Tracker and start your fitness journey</p>
+    </div>
+
+    <form id="registerForm" method="post">
+        {% csrf_token %}
+        
+        {% if form.errors %}
+            <div class="alert alert-error">
+                Please correct the errors below.
+            </div>
+        {% endif %}
+        
+        <div class="form-group">
+            <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+                <div class="text-danger">{{ form.username.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+                <div class="text-danger">{{ form.email.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.password1.id_for_label }}" class="form-label">Password</label>
+            {{ form.password1 }}
+            {% if form.password1.errors %}
+                <div class="text-danger">{{ form.password1.errors.0 }}</div>
+            {% endif %}
+            <small class="text-muted">Password must be at least 8 characters long</small>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password</label>
+            {{ form.password2 }}
+            {% if form.password2.errors %}
+                <div class="text-danger">{{ form.password2.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;">
+            Create Account
+        </button>
+    </form>
+
+    <div class="text-center mt-3">
+        <p class="text-muted">Already have an account? <a href="{% url 'login' %}" style="color: #667eea;">Sign in</a></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('registerForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const password = document.getElementById('{{ form.password1.id_for_label }}').value;
+    const passwordConfirm = document.getElementById('{{ form.password2.id_for_label }}').value;
+    
+    if (password !== passwordConfirm) {
+        showAlert('Passwords do not match!', 'error');
+        return;
+    }
+    
+    if (password.length < 8) {
+        showAlert('Password must be at least 8 characters long!', 'error');
+        return;
+    }
+    
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = showLoading(submitBtn);
+    
+    // Submit the form
+    this.submit();
+});
+
+// Real-time password confirmation validation
+document.getElementById('{{ form.password2.id_for_label }}').addEventListener('input', function() {
+    const password = document.getElementById('{{ form.password1.id_for_label }}').value;
+    const passwordConfirm = this.value;
+    
+    if (passwordConfirm && password !== passwordConfirm) {
+        this.style.borderColor = '#dc3545';
+    } else {
+        this.style.borderColor = '#e9ecef';
+    }
+});
+</script>
+{% endblock %}

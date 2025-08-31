@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Activity - Fitness Tracker{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <div class="text-center mb-3">
+        <h1>Add New Activity</h1>
+        <p class="text-muted">Track your fitness progress</p>
+    </div>
+
+    <form id="addActivityForm" method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="activity_type" class="form-label">Activity Type *</label>
+            <select id="activity_type" name="activity_type" class="form-input" required>
+                <option value="">Select activity type</option>
+                <option value="running">Running</option>
+                <option value="cycling">Cycling</option>
+                <option value="weightlifting">Weightlifting</option>
+                <option value="swimming">Swimming</option>
+                <option value="walking">Walking</option>
+                <option value="yoga">Yoga</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="duration" class="form-label">Duration (minutes) *</label>
+            <input type="number" id="duration" name="duration" class="form-input" required min="1" max="1440">
+            <small class="text-muted">Enter duration in minutes (1-1440)</small>
+        </div>
+
+        <div class="form-group">
+            <label for="distance" class="form-label">Distance (km) *</label>
+            <input type="number" id="distance" name="distance" class="form-input" required min="0" step="0.1">
+            <small class="text-muted">Enter distance in kilometers</small>
+        </div>
+
+        <div class="form-group">
+            <label for="calories_burned" class="form-label">Calories Burned *</label>
+            <input type="number" id="calories_burned" name="calories_burned" class="form-input" required min="0">
+            <small class="text-muted">Enter estimated calories burned</small>
+        </div>
+
+        <div class="form-group">
+            <label for="date" class="form-label">Date & Time *</label>
+            <input type="datetime-local" id="date" name="date" class="form-input" required>
+            <small class="text-muted">Select the date and time of your activity</small>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save Activity
+            </button>
+            <a href="{% url 'activities' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<!-- Quick Add Templates -->
+<div class="card" style="margin-top: 2rem;">
+    <h3>Quick Add Templates</h3>
+    <p class="text-muted mb-3">Use these templates to quickly add common activities</p>
+    
+         <div class="grid grid-3">
+         <button class="btn btn-secondary" data-template="running-30">
+             <i class="fas fa-running"></i> 30min Run
+         </button>
+         <button class="btn btn-secondary" data-template="cycling-45">
+             <i class="fas fa-bicycle"></i> 45min Cycle
+         </button>
+         <button class="btn btn-secondary" data-template="weightlifting-60">
+             <i class="fas fa-dumbbell"></i> 1hr Gym
+         </button>
+         <button class="btn btn-secondary" data-template="walking-20">
+             <i class="fas fa-walking"></i> 20min Walk
+         </button>
+         <button class="btn btn-secondary" data-template="swimming-30">
+             <i class="fas fa-swimming-pool"></i> 30min Swim
+         </button>
+         <button class="btn btn-secondary" data-template="yoga-45">
+             <i class="fas fa-pray"></i> 45min Yoga
+         </button>
+     </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/add-activity.js' %}"></script>
+{% endblock %}

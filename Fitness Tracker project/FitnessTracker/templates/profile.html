@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Profile - Fitness Tracker{% endblock %}
+
+{% block content %}
+<div class="grid grid-2">
+    <!-- Profile Information -->
+        <div class="card profile-card beautiful-profile bro-glass-card" id="profileCard">
+            <h2 class="profile-title bro-animate-title"><i class="fas fa-user-circle bro-icon-accent"></i> Profile Information</h2>
+            <div class="profile-info-list">
+                <div class="profile-info-item bro-animate-item" style="animation-delay:0.2s;">
+                    <span class="profile-label"><i class="fas fa-user bro-icon-accent"></i> Username:</span>
+                    <span class="profile-value accent">{{ user.username }}</span>
+                </div>
+                <div class="profile-info-item bro-animate-item" style="animation-delay:0.4s;">
+                    <span class="profile-label"><i class="fas fa-envelope bro-icon-accent"></i> Email:</span>
+                    <span class="profile-value">{{ user.email }}</span>
+                </div>
+                <div class="profile-info-item bro-animate-item" style="animation-delay:0.6s;">
+                    <span class="profile-label"><i class="fas fa-calendar-alt bro-icon-accent"></i> Member Since:</span>
+                    <span class="profile-value">{{ user.date_joined|date:'F d, Y' }}</span>
+                </div>
+                <div class="profile-info-item bro-animate-item" style="animation-delay:0.8s;">
+                    <span class="profile-label"><i class="fas fa-clock bro-icon-accent"></i> Last Login:</span>
+                    <span class="profile-value">{{ user.last_login|date:'F d, Y H:i' }}</span>
+                </div>
+            </div>
+        </div>
+
+    <!-- Account Statistics -->
+    <div class="card">
+        <h2>Account Statistics</h2>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_activities }}</div>
+                <div class="stat-label">Total Activities</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ total_duration }}m</div>
+                <div class="stat-label">Total Duration</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ total_distance }}km</div>
+                <div class="stat-label">Total Distance</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ total_calories }}</div>
+                <div class="stat-label">Calories Burned</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password -->
+<div class="card">
+    <h2>Change Password</h2>
+    
+    <form id="changePasswordForm" method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="current_password" class="form-label">Current Password</label>
+            <input type="password" id="current_password" name="current_password" class="form-input" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="new_password" class="form-label">New Password</label>
+            <input type="password" id="new_password" name="new_password" class="form-input" required>
+            <small class="text-muted">Password must be at least 8 characters long</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="confirm_password" class="form-label">Confirm New Password</label>
+            <input type="password" id="confirm_password" name="confirm_password" class="form-input" required>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-key"></i> Change Password
+        </button>
+    </form>
+</div>
+
+<!-- Activity Summary -->
+<div class="card">
+    <h2>Activity Summary</h2>
+    
+    <div class="grid grid-3">
+        <div class="stat-card">
+            <h3>Most Common Activity</h3>
+            <div class="stat-number">{{ most_common_activity|default:"None" }}</div>
+        </div>
+        
+        <div class="stat-card">
+            <h3>Average Duration</h3>
+            <div class="stat-number">{{ avg_duration|default:"0" }}m</div>
+        </div>
+        
+        <div class="stat-card">
+            <h3>Average Distance</h3>
+            <div class="stat-number">{{ avg_distance|default:"0" }}km</div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity Chart -->
+<div class="card">
+    <h2>Recent Activity Trend</h2>
+    <div style="height: 300px; margin-top: 1rem;">
+        <canvas id="activityTrendChart"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Change password form validation
+document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const newPassword = document.getElementById('new_password').value;
+    const confirmPassword = document.getElementById('confirm_password').value;
+    
+    if (newPassword !== confirmPassword) {
+        showAlert('New passwords do not match!', 'error');
+        return;
+    }
+    
+    if (newPassword.length < 8) {
+        showAlert('Password must be at least 8 characters long!', 'error');
+        return;
+    }
+    
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = showLoading(submitBtn);
+    
+    // Submit form
+    this.submit();
+});
+
+// Real-time password confirmation validation
+document.getElementById('confirm_password').addEventListener('input', function() {
+    const newPassword = document.getElementById('new_password').value;
+    const confirmPassword = this.value;
+    
+    if (confirmPassword && newPassword !== confirmPassword) {
+        this.style.borderColor = '#dc3545';
+    } else {
+        this.style.borderColor = '#e9ecef';
+    }
+});
+
+// Activity trend chart
+function createActivityTrendChart() {
+    const ctx = document.getElementById('activityTrendChart').getContext('2d');
+    
+    // Sample data - replace with real data from API
+    const trendData = {
+        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+        datasets: [{
+            label: 'Activities per Week',
+            data: [5, 7, 3, 8],
+            backgroundColor: 'rgba(102, 126, 234, 0.2)',
+            borderColor: 'rgba(102, 126, 234, 1)',
+            borderWidth: 2,
+            tension: 0.4
+        }]
+    };
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: trendData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    createActivityTrendChart();
+});
+</script>
+{% endblock %}

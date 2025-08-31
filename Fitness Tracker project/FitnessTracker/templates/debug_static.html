@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Debug Static Files - Fitness Tracker{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Static Files Debug</h1>
+    
+    <div class="mb-3">
+        <h3>CSS Test</h3>
+        <p>If you see this text with proper styling, CSS is working:</p>
+        <div class="btn btn-primary">Primary Button</div>
+        <div class="btn btn-secondary">Secondary Button</div>
+    </div>
+    
+    <div class="mb-3">
+        <h3>JavaScript Test</h3>
+        <p>Click the button below to test JavaScript:</p>
+        <button id="testJs" class="btn btn-primary">Test JavaScript</button>
+        <div id="jsResult" class="mt-2"></div>
+    </div>
+    
+    <div class="mb-3">
+        <h3>Static File URLs</h3>
+        <p>CSS URL: {% static 'css/style.css' %}</p>
+        <p>JS URL: {% static 'js/main.js' %}</p>
+    </div>
+    
+    <div class="mb-3">
+        <h3>Console Check</h3>
+        <p>Open your browser's developer tools (F12) and check the Console tab for any errors.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('testJs').addEventListener('click', function() {
+    document.getElementById('jsResult').innerHTML = '<div class="alert alert-success">JavaScript is working! ✅</div>';
+    console.log('JavaScript test successful!');
+});
+
+// Test if main.js functions are available
+if (typeof showAlert === 'function') {
+    console.log('main.js functions are loaded correctly');
+} else {
+    console.error('main.js functions are NOT loaded');
+}
+</script>
+{% endblock %}

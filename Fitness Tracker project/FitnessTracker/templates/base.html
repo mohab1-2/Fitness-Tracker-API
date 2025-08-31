@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Fitness Tracker{% endblock %}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    {% load static %}
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+            <div class="container">
+                <div class="navbar-content">
+                    <a href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'landing' %}{% endif %}" class="logo animated-logo">
+                        <i class="fas fa-dumbbell"></i> Fitness Tracker
+                    </a>
+                    {% if user.is_authenticated %}
+                    <ul class="nav-links animated-nav">
+                        <li><a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a></li>
+                        <li><a href="{% url 'activities' %}" class="nav-link">Activities</a></li>
+                        <li><a href="{% url 'add_activity' %}" class="nav-link">Add Activity</a></li>
+                        <li><a href="{% url 'profile' %}" class="nav-link">Profile</a></li>
+                        <li><a href="{% url 'logout' %}" class="nav-link">Logout</a></li>
+                    </ul>
+                    {% else %}
+                    <ul class="nav-links animated-nav">
+                        <li><a href="{% url 'login' %}" class="nav-link">Login</a></li>
+                        <li><a href="{% url 'register' %}" class="nav-link">Register</a></li>
+                    </ul>
+                    {% endif %}
+                </div>
+            </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
