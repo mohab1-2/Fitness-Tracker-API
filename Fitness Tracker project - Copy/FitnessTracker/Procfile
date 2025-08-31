@@ -1,1 +1,0 @@
-web: gunicorn FitnessTracker.wsgi --log-file -
