@@ -1,14 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator
-from datetime import datetime
+from django.utils import timezone
 
 
 class User(AbstractUser):
     """Custom User model with additional fields"""
     email = models.EmailField(unique=True)
-    username = models.CharField(max_length=150, unique=True)
-    password = models.CharField(max_length=128)
     
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
@@ -45,7 +43,7 @@ class Activity(models.Model):
         validators=[MinValueValidator(0)],
         help_text="Calories burned during the activity"
     )
-    date = models.DateTimeField(default=datetime.now)
+    date = models.DateTimeField(default=timezone.now)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -55,3 +53,12 @@ class Activity(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.activity_type} on {self.date.strftime('%Y-%m-%d')}"
+    
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.duration and (self.duration < 1 or self.duration > 1440):
+            raise ValidationError('Duration must be between 1 and 1440 minutes.')
+        if self.distance and self.distance < 0:
+            raise ValidationError('Distance cannot be negative.')
+        if self.calories_burned and self.calories_burned < 0:
+            raise ValidationError('Calories burned cannot be negative.')

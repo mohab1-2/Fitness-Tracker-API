@@ -2,6 +2,7 @@
 
 // Loading state management
 function showLoading(button) {
+    if (!button) return '';
     const originalText = button.innerHTML;
     button.innerHTML = '<span class="loading"></span> Loading...';
     button.disabled = true;
@@ -9,12 +10,17 @@ function showLoading(button) {
 }
 
 function hideLoading(button, originalText) {
-    button.innerHTML = originalText;
+    if (!button) return;
+    button.innerHTML = originalText || 'Submit';
     button.disabled = false;
 }
 
 // Alert system
 function showAlert(message, type = 'success') {
+    // Remove existing alerts
+    const existingAlerts = document.querySelectorAll('.alert');
+    existingAlerts.forEach(alert => alert.remove());
+    
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type}`;
     alertDiv.textContent = message;
@@ -25,21 +31,27 @@ function showAlert(message, type = 'success') {
         
         // Auto-remove after 5 seconds
         setTimeout(() => {
-            alertDiv.remove();
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
         }, 5000);
     }
 }
 
 // Date and time formatting utilities
 function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } catch (e) {
+        return dateString;
+    }
 }
 
 function formatDuration(minutes) {
@@ -57,7 +69,7 @@ function formatDistance(distance) {
 
 // Form validation utilities
 function validatePassword(password) {
-    return password.length >= 8;
+    return password && password.length >= 8;
 }
 
 function validateEmail(email) {
@@ -100,7 +112,20 @@ async function apiRequest(url, options = {}) {
 
 function getCSRFToken() {
     const token = document.querySelector('[name=csrfmiddlewaretoken]');
-    return token ? token.value : '';
+    if (token) {
+        return token.value;
+    }
+    
+    // Try to get from cookie
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'csrftoken') {
+            return value;
+        }
+    }
+    
+    return '';
 }
 
 // Modal utilities
@@ -117,78 +142,6 @@ function hideModal(modalId) {
     if (modal) {
         modal.classList.add('d-none');
         modal.style.display = 'none';
-    }
-}
-
-// Chart utilities
-function createChart(canvasId, data, options = {}) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas) return null;
-    
-    const ctx = canvas.getContext('2d');
-    
-    const defaultOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                display: false
-            }
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                grid: {
-                    color: 'rgba(0, 0, 0, 0.1)'
-                }
-            },
-            x: {
-                grid: {
-                    display: false
-                }
-            }
-        }
-    };
-    
-    const finalOptions = { ...defaultOptions, ...options };
-    
-    return new Chart(ctx, {
-        type: 'line',
-        data: data,
-        options: finalOptions
-    });
-}
-
-// Activity utilities
-function getActivityTypeColor(activityType) {
-    const colors = {
-        running: '#1976d2',
-        cycling: '#388e3c',
-        weightlifting: '#f57c00',
-        swimming: '#0277bd',
-        walking: '#7b1fa2',
-        yoga: '#c2185b',
-        other: '#616161'
-    };
-    return colors[activityType] || colors.other;
-}
-
-// Local storage utilities
-function saveToLocalStorage(key, value) {
-    try {
-        localStorage.setItem(key, JSON.stringify(value));
-    } catch (error) {
-        console.error('Error saving to localStorage:', error);
-    }
-}
-
-function getFromLocalStorage(key, defaultValue = null) {
-    try {
-        const item = localStorage.getItem(key);
-        return item ? JSON.parse(item) : defaultValue;
-    } catch (error) {
-        console.error('Error reading from localStorage:', error);
-        return defaultValue;
     }
 }
 
@@ -224,7 +177,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const alerts = document.querySelectorAll('.alert');
     alerts.forEach(alert => {
         setTimeout(() => {
-            alert.remove();
+            if (alert.parentNode) {
+                alert.remove();
+            }
         }, 5000);
     });
     

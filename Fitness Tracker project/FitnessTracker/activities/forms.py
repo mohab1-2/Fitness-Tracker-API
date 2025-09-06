@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from .models import Activity
 
 User = get_user_model()
@@ -21,6 +22,16 @@ class CustomUserCreationForm(UserCreationForm):
         # Add CSS classes to password fields
         self.fields['password1'].widget.attrs.update({'class': 'form-input'})
         self.fields['password2'].widget.attrs.update({'class': 'form-input'})
+        
+        # Add help text
+        self.fields['username'].help_text = 'Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.'
+        self.fields['password1'].help_text = 'Your password must contain at least 8 characters.'
+    
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise ValidationError('A user with this email already exists.')
+        return email
 
 class ActivityForm(forms.ModelForm):
     class Meta:
@@ -33,6 +44,13 @@ class ActivityForm(forms.ModelForm):
             'calories_burned': forms.NumberInput(attrs={'class': 'form-input', 'min': '0'}),
             'date': forms.DateTimeInput(attrs={'class': 'form-input', 'type': 'datetime-local'}),
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set default date to current time
+        if not self.instance.pk:
+            from django.utils import timezone
+            self.fields['date'].initial = timezone.now().strftime('%Y-%m-%dT%H:%M')
     
     def clean_duration(self):
         duration = self.cleaned_data.get('duration')
